@@ -585,8 +585,6 @@ class Elementor_Video_Box_Widget extends \Elementor\Widget_Base {
             $video_id = $matches[1];
         }
     }
-
-    // Determine thumbnail URL
     $thumbnail_url = $settings['thumbnail']['url'];
     // Check if custom thumbnail is empty or set to default placeholder
     if (empty($thumbnail_url) || $thumbnail_url === 'https://via.placeholder.com/800x450.jpg?text=Video+Thumbnail') {
@@ -594,7 +592,6 @@ class Elementor_Video_Box_Widget extends \Elementor\Widget_Base {
         $thumbnail_url = !empty($video_id) ? "https://img.youtube.com/vi/{$video_id}/hqdefault.jpg" : 'https://via.placeholder.com/800x450.jpg?text=Video+Thumbnail';
     }
 
-    // Build YouTube URL parameters
     $youtube_params = [];
     if ($settings['autoplay'] === 'yes') {
         $youtube_params[] = 'autoplay=1';
