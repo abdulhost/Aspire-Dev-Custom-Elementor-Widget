@@ -262,7 +262,7 @@ class Elementor_Video_Box_Widget extends \Elementor\Widget_Base {
                     'px' => ['min' => 1.0, 'max' => 1.2, 'step' => 0.01],
                 ],
                 'default' => [
-                    'size' => 1.02,
+                    'size' => 1.01,
                 ],
                 'selectors' => [
                     '{{WRAPPER}} .video-box:hover' => 'transform: scale({{SIZE}});',
@@ -573,166 +573,179 @@ class Elementor_Video_Box_Widget extends \Elementor\Widget_Base {
     }
 
     protected function render() {
-        $settings = $this->get_settings_for_display();
-        $unique_id = uniqid('video_box_');
+    $settings = $this->get_settings_for_display();
+    $unique_id = uniqid('video_box_');
 
-        // Parse YouTube URL to extract video ID
-        $video_id = '';
-        $youtube_url = $settings['youtube_url'];
-        if (!empty($youtube_url)) {
-            // Support multiple YouTube URL formats
-            if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/', $youtube_url, $matches)) {
-                $video_id = $matches[1];
+    // Parse YouTube URL to extract video ID
+    $video_id = '';
+    $youtube_url = $settings['youtube_url'];
+    if (!empty($youtube_url)) {
+        // Support multiple YouTube URL formats
+        if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/', $youtube_url, $matches)) {
+            $video_id = $matches[1];
+        }
+    }
+
+    // Determine thumbnail URL
+    $thumbnail_url = $settings['thumbnail']['url'];
+    // Check if custom thumbnail is empty or set to default placeholder
+    if (empty($thumbnail_url) || $thumbnail_url === 'https://via.placeholder.com/800x450.jpg?text=Video+Thumbnail') {
+        // Use YouTube thumbnail if video ID is available
+        $thumbnail_url = !empty($video_id) ? "https://img.youtube.com/vi/{$video_id}/hqdefault.jpg" : 'https://via.placeholder.com/800x450.jpg?text=Video+Thumbnail';
+    }
+
+    // Build YouTube URL parameters
+    $youtube_params = [];
+    if ($settings['autoplay'] === 'yes') {
+        $youtube_params[] = 'autoplay=1';
+    }
+    if ($settings['show_controls'] !== 'yes') {
+        $youtube_params[] = 'controls=0';
+    }
+    if ($settings['loop_video'] === 'yes') {
+        $youtube_params[] = 'loop=1';
+        $youtube_params[] = 'playlist=' . esc_attr($video_id); // Required for looping
+    }
+    $youtube_query = !empty($youtube_params) ? '?' . implode('&', $youtube_params) : '';
+
+    ?>
+    <style>
+        /* Container Styles */
+        #<?php echo esc_attr($unique_id); ?> {
+            position: relative;
+            width: 100%;
+            background-image: url('<?php echo esc_url($thumbnail_url); ?>');
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            /* transition: transform ease; */
+        }
+        #<?php echo esc_attr($unique_id); ?>::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+        #<?php echo esc_attr($unique_id); ?> .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            display: <?php echo $settings['show_play_icon'] === 'yes' ? 'block' : 'none'; ?>;
+        }
+        #<?php echo esc_attr($unique_id); ?>:hover .play-icon {
+            opacity: 0.9;
+        }
+        #<?php echo esc_attr($unique_id); ?> .video-text {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #<?php echo esc_attr($unique_id); ?> .video-title {
+            margin-bottom: 8px;
+        }
+        #<?php echo esc_attr($unique_id); ?>_popup {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #<?php echo esc_attr($unique_id); ?>_popup iframe {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            max-height: 450px;
+            aspect-ratio: 16 / 9;
+            border: none;
+        }
+        #<?php echo esc_attr($unique_id); ?>_popup .closeBtn {
+            position: absolute;
+            top: clamp(10px, 2vw, 20px);
+            right: clamp(15px, 3vw, 30px);
+            cursor: pointer;
+            z-index: 1000;
+        }
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            #<?php echo esc_attr($unique_id); ?>_popup iframe {
+                max-width: 90vw;
+                max-height: calc(90vw * 9 / 16);
             }
         }
-
-        // Build YouTube URL parameters
-        $youtube_params = [];
-        if ($settings['autoplay'] === 'yes') {
-            $youtube_params[] = 'autoplay=1';
-        }
-        if ($settings['show_controls'] !== 'yes') {
-            $youtube_params[] = 'controls=0';
-        }
-        if ($settings['loop_video'] === 'yes') {
-            $youtube_params[] = 'loop=1';
-            $youtube_params[] = 'playlist=' . esc_attr($video_id); // Required for looping
-        }
-        $youtube_query = !empty($youtube_params) ? '?' . implode('&', $youtube_params) : '';
-
-        ?>
-        <style>
-            /* Container Styles */
+        @media (max-width: 768px) {
             #<?php echo esc_attr($unique_id); ?> {
-                position: relative;
-                width: 100%;
-                background-image: url('<?php echo esc_url($settings['thumbnail']['url']); ?>');
-                background-size: cover;
-                background-position: center;
-                cursor: pointer;
-                overflow: hidden;
-                display: flex;
-                align-items: flex-end;
-                transition: transform ease;
-            }
-            #<?php echo esc_attr($unique_id); ?>::before {
-                content: "";
-                position: absolute;
-                inset: 0;
-                z-index: 1;
-            }
-            #<?php echo esc_attr($unique_id); ?> .play-icon {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                z-index: 2;
-                pointer-events: none;
-                transition: opacity 0.3s ease;
-                display: <?php echo $settings['show_play_icon'] === 'yes' ? 'block' : 'none'; ?>;
-            }
-            #<?php echo esc_attr($unique_id); ?>:hover .play-icon {
-                opacity: 0.9;
-            }
-            #<?php echo esc_attr($unique_id); ?> .video-text {
-                position: relative;
-                z-index: 2;
-                width: 100%;
-                box-sizing: border-box;
-            }
-            #<?php echo esc_attr($unique_id); ?> .video-title {
-                margin-bottom: 8px;
-            }
-            #<?php echo esc_attr($unique_id); ?>_popup {
-                display: none;
-                position: fixed;
-                z-index: 9999;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                justify-content: center;
-                align-items: center;
-                padding: 20px;
-                box-sizing: border-box;
+                max-width: 100%;
             }
             #<?php echo esc_attr($unique_id); ?>_popup iframe {
-                width: 100%;
-                height: 100%;
-                max-width: 800px;
-                max-height: 450px;
-                aspect-ratio: 16 / 9;
-                border: none;
+                max-width: 95vw;
+                max-height: calc(95vw * 9 / 16);
             }
-            #<?php echo esc_attr($unique_id); ?>_popup .closeBtn {
-                position: absolute;
-                top: clamp(10px, 2vw, 20px);
-                right: clamp(15px, 3vw, 30px);
-                cursor: pointer;
-                z-index: 1000;
+        }
+        @media (max-width: 480px) {
+            #<?php echo esc_attr($unique_id); ?> .video-text {
+                padding: 10px;
             }
-            /* Responsive Adjustments */
-            @media (max-width: 1024px) {
-                #<?php echo esc_attr($unique_id); ?>_popup iframe {
-                    max-width: 90vw;
-                    max-height: calc(90vw * 9 / 16);
-                }
+            #<?php echo esc_attr($unique_id); ?>_popup {
+                padding: 10px;
             }
-            @media (max-width: 768px) {
-                #<?php echo esc_attr($unique_id); ?> {
-                    max-width: 100%;
-                }
-                #<?php echo esc_attr($unique_id); ?>_popup iframe {
-                    max-width: 95vw;
-                    max-height: calc(95vw * 9 / 16);
-                }
-            }
-            @media (max-width: 480px) {
-                #<?php echo esc_attr($unique_id); ?> .video-text {
-                    padding: 10px;
-                }
-                #<?php echo esc_attr($unique_id); ?>_popup {
-                    padding: 10px;
-                }
-            }
-        </style>
+        }
+    </style>
 
-        <div id="<?php echo esc_attr($unique_id); ?>" class="video-box">
-            <?php if ($settings['show_play_icon'] === 'yes'): ?>
-                <div class="play-icon">▶</div>
-            <?php endif; ?>
-            <div class="video-text">
-                <div class="video-title"><?php echo esc_html($settings['title']); ?></div>
-                <div class="video-desc"><?php echo esc_html($settings['description']); ?></div>
+    <div id="<?php echo esc_attr($unique_id); ?>" class="video-box">
+        <?php if ($settings['show_play_icon'] === 'yes'): ?>
+            <div class="play-icon">
+                <svg style="width:28px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                    <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+                    <path fill="white" d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/>
+                </svg>
             </div>
+        <?php endif; ?>
+        <div class="video-text">
+            <div class="video-title"><?php echo esc_html($settings['title']); ?></div>
+            <div class="video-desc"><?php echo esc_html($settings['description']); ?></div>
         </div>
+    </div>
 
-        <div id="<?php echo esc_attr($unique_id); ?>_popup" class="video-popup">
-            <div class="closeBtn" onclick="closeVideo('<?php echo esc_attr($unique_id); ?>')">×</div>
-            <iframe id="<?php echo esc_attr($unique_id); ?>_iframe" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
+    <div id="<?php echo esc_attr($unique_id); ?>_popup" class="video-popup">
+        <div class="closeBtn" onclick="closeVideo('<?php echo esc_attr($unique_id); ?>')">×</div>
+        <iframe id="<?php echo esc_attr($unique_id); ?>_iframe" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
 
-        <script>
-            document.getElementById('<?php echo esc_attr($unique_id); ?>').onclick = function () {
-                <?php if (!empty($video_id)) : ?>
-                    document.getElementById('<?php echo esc_attr($unique_id); ?>_iframe').src = "https://www.youtube.com/embed/<?php echo esc_attr($video_id); ?><?php echo $youtube_query; ?>";
-                    document.getElementById('<?php echo esc_attr($unique_id); ?>_popup').style.display = "flex";
-                <?php else: ?>
-                    console.warn('Invalid or missing YouTube URL for video box: <?php echo esc_attr($unique_id); ?>');
-                <?php endif; ?>
-            };
+    <script>
+        document.getElementById('<?php echo esc_attr($unique_id); ?>').onclick = function () {
+            <?php if (!empty($video_id)) : ?>
+                document.getElementById('<?php echo esc_attr($unique_id); ?>_iframe').src = "https://www.youtube.com/embed/<?php echo esc_attr($video_id); ?><?php echo $youtube_query; ?>";
+                document.getElementById('<?php echo esc_attr($unique_id); ?>_popup').style.display = "flex";
+            <?php else: ?>
+                console.warn('Invalid or missing YouTube URL for video box: <?php echo esc_attr($unique_id); ?>');
+            <?php endif; ?>
+        };
 
-            function closeVideo(id) {
-                document.getElementById(id + '_popup').style.display = "none";
-                document.getElementById(id + '_iframe').src = "";
+        function closeVideo(id) {
+            document.getElementById(id + '_popup').style.display = "none";
+            document.getElementById(id + '_iframe').src = "";
+        }
+
+        window.onclick = function(e) {
+            if (e.target === document.getElementById('<?php echo esc_attr($unique_id); ?>_popup')) {
+                closeVideo('<?php echo esc_attr($unique_id); ?>');
             }
-
-            window.onclick = function(e) {
-                if (e.target === document.getElementById('<?php echo esc_attr($unique_id); ?>_popup')) {
-                    closeVideo('<?php echo esc_attr($unique_id); ?>');
-                }
-            };
-        </script>
-        <?php
-    }
+        };
+    </script>
+    <?php
+}
 }
