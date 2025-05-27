@@ -351,14 +351,16 @@ class Elementor_Video_Box_Widget extends \Elementor\Widget_Base {
             ]
         );
 
+      
+
         $this->add_control(
             'overlay_color_start',
             [
-                'label' => __('Overlay Gradient Start', 'text-domain'),
+                'label' => __('Overlay Bottom Color (20%)', 'text-domain'),
                 'type' => \Elementor\Controls_Manager::COLOR,
-                'default' => 'rgba(0,128,0,0.6)',
+                'default' => 'rgb(6, 117, 46)', 
                 'selectors' => [
-                    '{{WRAPPER}} .video-box::before' => 'background: linear-gradient(to top, {{VALUE}}, {{overlay_color_end.VALUE}});',
+                    '{{WRAPPER}} .video-box::before' => 'background: {{VALUE}};',
                 ],
             ]
         );
@@ -366,16 +368,16 @@ class Elementor_Video_Box_Widget extends \Elementor\Widget_Base {
         $this->add_control(
             'overlay_color_end',
             [
-                'label' => __('Overlay Gradient End', 'text-domain'),
+                'label' => __('Overlay Top Color (80%)', 'text-domain'),
                 'type' => \Elementor\Controls_Manager::COLOR,
-                'default' => 'rgba(0,0,0,0.3)',
+                'default' => 'rgb(0, 0, 0)', 
                 'selectors' => [
-                    '{{WRAPPER}} .video-box::before' => 'background: linear-gradient(to top, {{overlay_color_start.VALUE}}, {{VALUE}});',
+                    '{{WRAPPER}} .video-box::after' => 'background: {{VALUE}};',
                 ],
             ]
         );
 
-        $this->add_control(
+    $this->add_control(
             'play_icon_color',
             [
                 'label' => __('Play Icon Color', 'text-domain'),
@@ -608,98 +610,101 @@ class Elementor_Video_Box_Widget extends \Elementor\Widget_Base {
     ?>
     <style>
         /* Container Styles */
-        #<?php echo esc_attr($unique_id); ?> {
-            position: relative;
-            width: 100%;
-            background-image: url('<?php echo esc_url($thumbnail_url); ?>');
-            background-size: cover;
-            background-position: center;
-            cursor: pointer;
-            overflow: hidden;
-            display: flex;
-            align-items: flex-end;
-            /* transition: transform ease; */
-        }
-        #<?php echo esc_attr($unique_id); ?>::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-        }
-        #<?php echo esc_attr($unique_id); ?> .play-icon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            display: <?php echo $settings['show_play_icon'] === 'yes' ? 'block' : 'none'; ?>;
-        }
-        #<?php echo esc_attr($unique_id); ?>:hover .play-icon {
-            opacity: 0.9;
-        }
-        #<?php echo esc_attr($unique_id); ?> .video-text {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        #<?php echo esc_attr($unique_id); ?> .video-title {
-            margin-bottom: 8px;
-        }
-        #<?php echo esc_attr($unique_id); ?>_popup {
-            display: none;
-            position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        #<?php echo esc_attr($unique_id); ?>_popup iframe {
-            width: 100%;
-            height: 100%;
-            max-width: 800px;
-            max-height: 450px;
-            aspect-ratio: 16 / 9;
-            border: none;
-        }
-        #<?php echo esc_attr($unique_id); ?>_popup .closeBtn {
-            position: absolute;
-            top: clamp(10px, 2vw, 20px);
-            right: clamp(15px, 3vw, 30px);
-            cursor: pointer;
-            z-index: 1000;
-        }
-        /* Responsive Adjustments */
-        @media (max-width: 1024px) {
-            #<?php echo esc_attr($unique_id); ?>_popup iframe {
-                max-width: 90vw;
-                max-height: calc(90vw * 9 / 16);
-            }
-        }
-        @media (max-width: 768px) {
-            #<?php echo esc_attr($unique_id); ?> {
-                max-width: 100%;
-            }
-            #<?php echo esc_attr($unique_id); ?>_popup iframe {
-                max-width: 95vw;
-                max-height: calc(95vw * 9 / 16);
-            }
-        }
-        @media (max-width: 480px) {
-            #<?php echo esc_attr($unique_id); ?> .video-text {
-                padding: 10px;
-            }
-            #<?php echo esc_attr($unique_id); ?>_popup {
-                padding: 10px;
-            }
-        }
+#<?php echo esc_attr($unique_id); ?> {
+    position: relative;
+    width: 100%;
+    background-image: url('<?php echo esc_url($thumbnail_url); ?>');
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+}
+#<?php echo esc_attr($unique_id); ?>::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%; /* Extended height for smoother gradient */
+    background: linear-gradient(to top, <?php echo esc_attr($settings['overlay_color_start']); ?> 0%, transparent 60%);
+    z-index: 1;
+}
+#<?php echo esc_attr($unique_id); ?> .play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    display: <?php echo $settings['show_play_icon'] === 'yes' ? 'block' : 'none'; ?>;
+}
+#<?php echo esc_attr($unique_id); ?>:hover .play-icon {
+    opacity: 0.9;
+}
+#<?php echo esc_attr($unique_id); ?> .video-text {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    box-sizing: border-box;
+}
+#<?php echo esc_attr($unique_id); ?> .video-title {
+    margin-bottom: 8px;
+}
+#<?php echo esc_attr($unique_id); ?>_popup {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+#<?php echo esc_attr($unique_id); ?>_popup iframe {
+    width: 100%;
+    height: 100%;
+    max-width: 800px;
+    max-height: 450px;
+    aspect-ratio: 16 / 9;
+    border: none;
+}
+#<?php echo esc_attr($unique_id); ?>_popup .closeBtn {
+    position: absolute;
+    top: clamp(10px, 2vw, 20px);
+    right: clamp(15px, 3vw, 30px);
+    cursor: pointer;
+    z-index: 1000;
+}
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    #<?php echo esc_attr($unique_id); ?>_popup iframe {
+        max-width: 90vw;
+        max-height: calc(90vw * 9 / 16);
+    }
+}
+@media (max-width: 768px) {
+    #<?php echo esc_attr($unique_id); ?> {
+        max-width: 100%;
+    }
+    #<?php echo esc_attr($unique_id); ?>_popup iframe {
+        max-width: 95vw;
+        max-height: calc(95vw * 9 / 16);
+    }
+}
+@media (max-width: 480px) {
+    #<?php echo esc_attr($unique_id); ?> .video-text {
+        padding: 10px;
+    }
+    #<?php echo esc_attr($unique_id); ?>_popup {
+        padding: 10px;
+    }
+}
     </style>
 
     <div id="<?php echo esc_attr($unique_id); ?>" class="video-box">
