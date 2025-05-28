@@ -627,14 +627,14 @@ class Elementor_Video_Box_Widget extends \Elementor\Widget_Base {
             position: absolute;
             inset: 0;
             z-index: 1;
-background: linear-gradient(
-  to top,
-  rgba(6, 117, 46, 0.8) 0%,
-  rgba(6, 117, 46, 0.6) 20%,
-  rgba(6, 117, 46, 0.4) 40%,
-  rgba(6, 117, 46, 0.2) 50%,
-  rgba(6, 117, 46, 0) 60%
-);
+            background: linear-gradient(
+            to top,
+            rgba(6, 117, 46, 0.8) 0%,
+            rgba(6, 117, 46, 0.6) 20%,
+            rgba(6, 117, 46, 0.4) 40%,
+            rgba(6, 117, 46, 0.2) 50%,
+            rgba(6, 117, 46, 0) 60%
+            );
 
         }
         #<?php echo esc_attr($unique_id); ?> .play-icon {
