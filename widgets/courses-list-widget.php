@@ -376,7 +376,7 @@ class AspireDev_Courses_List_Widget extends \Elementor\Widget_Base {
                 }
                 .aspiredev-category-filter {
                 text-align: center;
-            }
+                }
                 .aspiredev-category-filter select {
                     max-width: 100%;
                     font-size: 0.95rem;
